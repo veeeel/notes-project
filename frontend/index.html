@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Notes</title>
+</head>
+<body>
+  <h1>Notes</h1>
+
+  <input id="noteInput" type="text" placeholder="Write a note">
+  <button onclick="addNote()">Add</button>
+
+  <ul id="notesList"></ul>
+
+  <script>
+    const API_URL = "/api";
+
+    async function loadNotes() {
+      const response = await fetch(`${API_URL}/notes`);
+      const notes = await response.json();
+
+      const list = document.getElementById("notesList");
+      list.innerHTML = "";
+
+      for (const note of notes) {
+        const item = document.createElement("li");
+        item.textContent = note.text + " ";
+
+        const button = document.createElement("button");
+        button.textContent = "Delete";
+        button.onclick = async function () {
+          await deleteNote(note.id);
+        };
+
+        item.appendChild(button);
+        list.appendChild(item);
+      }
+    }
+
+    async function addNote() {
+      const input = document.getElementById("noteInput");
+      const text = input.value;
+
+      await fetch(`${API_URL}/notes`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ text: text })
+      });
+
+      input.value = "";
+      loadNotes();
+    }
+
+    async function deleteNote(id) {
+      await fetch(`${API_URL}/notes/${id}`, {
+        method: "DELETE"
+      });
+
+      loadNotes();
+    }
+
+    loadNotes();
+  </script>
+</body>
+</html>
